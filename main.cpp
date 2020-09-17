@@ -14,9 +14,9 @@ class Node{
 public:
     static int num;
     int x,y;
-    Node(int x_, int y_):x(x_),y(y_){num++;};
+    Node(int x_, int y_):x(x_),y(y_){};
     Node();
-    int index = num;
+    int index;
     bool operator<(const Node&n)const {
         return index <= n.index;
     };
@@ -28,25 +28,24 @@ void ins(set<Node>&unvs, vector<Node>&R, const float (*table)[SIZE_OF_ROUTE]) {
     set<Node>::iterator lb;
     vector<Node>::iterator ppos;
     for (auto uv = unvs.begin(); uv != unvs.end(); uv++) {
-        for (auto it = R.begin(); it != R.end(); it++)
+        for (auto it = R.begin(); it != R.end() - 1; it++)
             if (table[uv->index - 1][it->index - 1] +
-                table[uv->index - 1][++it->index - 1] -
-                table[--it->index - 1][++it->index - 1] <= min_cost){
+                table[uv->index - 1][(it + 1)->index - 1] -
+                table[it->index - 1][(it + 1)->index - 1] <= min_cost){
                 min_cost = table[uv->index - 1][it->index - 1] +
-                           table[uv->index - 1][++it->index - 1] -
-                           table[--it->index - 1][++it->index - 1];
+                           table[uv->index - 1][(it + 1)->index - 1] -
+                           table[it->index - 1][(it + 1)->index - 1];
                 lb = uv;
-                ppos = it--;
+                ppos = it + 1;
+//                cout << "position: " << ppos - R.begin() << endl;//在一开始的时候ppos不可能等于2
             }
-
-
-
     }
     unvs.erase(lb);
     R.insert(ppos, *lb);
-
-}
-
+//    for(auto i = R.begin(); i < R.end(); i++)
+//        cout << "(" << i->x << ", " << i->y << ")";
+//    cout << endl;
+    }
 
 int main() {
 
@@ -57,10 +56,9 @@ int main() {
     x.emplace_back(Node(1, 1));
     x.emplace_back(Node(1, 3));
     x.emplace_back(Node(2, 3));
+    for(int i = 1; i <= SIZE_OF_NODE; i++)
+        x[i - 1].index = i;
 
-    vector<Node>Route;
-    set<Node>in_route {x[2], x[3]};
-    set<Node>not_in_route {x[0], x[1], x[4], x[5]};
 
     float dist_tab[SIZE_OF_ROUTE][SIZE_OF_ROUTE];
     for(auto s = x.begin(); s != x.end(); s++ )
@@ -78,16 +76,20 @@ int main() {
 //    }
 
 
+    vector<Node>Route;
+    set<Node>in_route {x[2], x[3]};
+    set<Node>not_in_route {x[0], x[1], x[4], x[5]};
     Route.push_back(x[2]);
     Route.push_back(x[3]);
+    Route.push_back(x[2]);
 
 
-    while(Route.size() != SIZE_OF_NODE)
+    while(!not_in_route.empty())
         ins(not_in_route, Route, dist_tab);
 
-    cout<< Route.size()<< endl;
     for(auto i = Route.begin(); i < Route.end(); i++)
-        cout << "(" << i->x << ", " << i->y << ")" <<endl;
+    {cout << "(" << i->x << ", " << i->y << ")" <<endl;
+        }
 
 
 
